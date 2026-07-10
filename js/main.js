@@ -7,6 +7,15 @@
 (function () {
   "use strict";
 
+  /* The browser restores the previous scroll position on reload before any
+     of this runs. If that lands mid-page, initScrollStage()'s scrub timeline
+     (built at boot, before the preloader even finishes) reads that leftover
+     scrollY and snaps hero/header/showreel straight to their scrolled-away
+     state — then run()'s scrollTo(0,0) yanks it back, reading as a jump on
+     every reload after the first. Force top-of-page ourselves instead. */
+  if ("scrollRestoration" in history) history.scrollRestoration = "manual";
+  window.scrollTo(0, 0);
+
   var PICS = [
     "preloader/images/pic1.webp",
     "preloader/images/pic2.webp",
