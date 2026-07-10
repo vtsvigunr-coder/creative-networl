@@ -1,0 +1,17 @@
+<svg preserveAspectRatio="none" width="100%" height="100%" overflow="visible" style="display: block;" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+<g id="pajamas:twitter" filter="url(#filter0_i_0_24)">
+<path id="Vector" d="M9.29712 6.928L14.3601 1H13.1601L8.76513 6.147L5.25313 1H1.20312L6.51313 8.784L1.20312 15H2.40313L7.04513 9.564L10.7541 15H14.8041L9.29712 6.928ZM7.65413 8.852L7.11613 8.077L2.83512 1.91H4.67813L8.13212 6.887L8.67013 7.662L13.1611 14.132H11.3181L7.65413 8.852Z" fill="var(--fill-0, black)"/>
+</g>
+<defs>
+<filter id="filter0_i_0_24" x="0" y="0" width="16" height="17.5238" filterUnits="userSpaceOnUse" color-interpolation-filters="sRGB">
+<feFlood flood-opacity="0" result="BackgroundImageFix"/>
+<feBlend mode="normal" in="SourceGraphic" in2="BackgroundImageFix" result="shape"/>
+<feColorMatrix in="SourceAlpha" type="matrix" values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 127 0" result="hardAlpha"/>
+<feOffset dy="1.52381"/>
+<feGaussianBlur stdDeviation="1.52381"/>
+<feComposite in2="hardAlpha" operator="arithmetic" k2="-1" k3="1"/>
+<feColorMatrix type="matrix" values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0.08 0"/>
+<feBlend mode="normal" in2="shape" result="effect1_innerShadow_0_24"/>
+</filter>
+</defs>
+</svg>

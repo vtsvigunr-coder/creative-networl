@@ -1,0 +1,2157 @@
+/* ============================================================
+   Creative Network · style.css
+   Design canvas: 1440 × 900 — every dimension scales via --s
+   ============================================================ */
+
+@font-face {
+  font-family: "DM Sans";
+  src: url("../assets/fonts/DMSans-Variable.ttf") format("truetype-variations");
+  font-weight: 100 1000;
+  font-style: normal;
+  font-display: block;
+}
+@font-face {
+  font-family: "ArtBrush";
+  src: url("../assets/fonts/Artbrush.ttf") format("truetype");
+  font-weight: 400;
+  font-style: normal;
+  font-display: block;
+}
+
+:root {
+  --s: calc(100vw / 1440);
+  --blue: #3a39ff;
+  --orange: #ff5b23;
+  --hairline: #d8d8d8;
+  --gray-text: #a3a3a3;
+  --clock-gray: #9a9a9a;
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+html {
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+  /* reserve the scrollbar gutter from the start, so unlocking
+     scroll after the preloader never shifts the layout */
+  scrollbar-gutter: stable;
+}
+
+/* scroll is locked while the preloader plays or the reel is fullscreen */
+html:has(body.is-loading),
+html:has(body.is-expanded),
+html:has(body.is-menu-open) { overflow: hidden; }
+
+body {
+  font-family: "DM Sans", sans-serif;
+  font-optical-sizing: auto;
+  background: #fff;
+  color: #000;
+  overflow-x: hidden;
+}
+body.is-loading,
+body.is-expanded { overflow: hidden; }
+
+button { font: inherit; background: none; border: none; cursor: pointer; color: inherit; }
+a { color: inherit; text-decoration: none; }
+img { display: block; }
+
+/* ============================================================
+   PRELOADER
+   ============================================================ */
+
+#preloader {
+  position: fixed;
+  inset: 0;
+  z-index: 100;
+  background: #fff;
+  overflow: hidden;
+  /* JS drives --imgw / --imgh */
+  --imgw: 110;
+  --imgh: 240;
+}
+
+/* --- Phrases ------------------------------------------------ */
+/* One element per phrase. Font is always 48px; stage-A size is
+   achieved with transform scale (90px → 80px = 1.875 → 1.667),
+   so nothing ever re-renders or swaps — silky smooth.          */
+.pl-phrase {
+  position: absolute;
+  top: 50%;
+  height: calc(52 * var(--s));
+  white-space: nowrap;
+  transform-origin: left center;
+  will-change: transform;
+}
+.pl-phrase--left  { left: calc(50% - 645 * var(--s)); }
+.pl-phrase--right { left: calc(50% + 123 * var(--s)); }
+
+.pl-phrase__text {
+  position: relative;
+  z-index: 2;
+  display: inline-block;
+  font-size: calc(48 * var(--s));
+  line-height: calc(52 * var(--s));
+  letter-spacing: calc(-0.96 * var(--s));
+  font-weight: 400;
+  color: #000;
+  /* hidden until the glow sweep reveals it */
+  clip-path: inset(-10% 100% -10% 0);
+}
+
+.pl-phrase__band {
+  position: absolute;
+  z-index: 1;
+  top: 50%;
+  transform: translateY(-50%);
+  left: 0;
+  width: 0;
+  height: calc(48 * var(--s));
+  background: linear-gradient(90deg, rgba(58, 57, 255, 0) 0%, rgba(58, 57, 255, 0.5) 100%);
+  opacity: 0;
+}
+.pl-phrase__caret {
+  position: absolute;
+  top: 50%;
+  left: 0;
+  width: calc(2 * var(--s));
+  height: calc(67 * var(--s));
+  transform: translateY(-50%);
+  background: #000;
+  opacity: 0;
+}
+
+/* Corner marks — 20px, #D8D8D8, offset 20px out of the phrase box */
+.pl-corner {
+  position: absolute;
+  width: calc(20 * var(--s));
+  height: calc(20 * var(--s));
+  background: url("../assets/figma/corner-tl.svg") no-repeat center / contain;
+  pointer-events: none;
+}
+.pl-phrase .pl-corner { opacity: 0; }
+.pl-corner--tl { left: calc(-20 * var(--s)); top: calc(-20 * var(--s)); }
+.pl-corner--tr { right: calc(-20 * var(--s)); top: calc(-20 * var(--s)); transform: rotate(90deg); }
+.pl-corner--br { right: calc(-20 * var(--s)); bottom: calc(-20 * var(--s)); transform: rotate(180deg); }
+.pl-corner--bl { left: calc(-20 * var(--s)); bottom: calc(-20 * var(--s)); transform: rotate(270deg); }
+
+/* --- Grid hairlines pinned to media frame ------------------ */
+.pl-grid { position: absolute; inset: 0; opacity: 0; pointer-events: none; }
+
+.pl-grid__line { position: absolute; background: var(--hairline); }
+.pl-grid__line--v { top: 0; bottom: 0; width: 1px; }
+.pl-grid__line--v1 { left: calc(50% - var(--imgw) * var(--s) / 2); }
+.pl-grid__line--v2 { left: calc(50% + var(--imgw) * var(--s) / 2); }
+.pl-grid__line--h {
+  left: 0; right: 0; height: 1px;
+  background: linear-gradient(90deg, rgba(216,216,216,0) 0%, var(--hairline) 48%, rgba(216,216,216,0) 100%);
+}
+.pl-grid__line--h1 { top: calc(50% - var(--imgh) * var(--s) / 2); }
+.pl-grid__line--h2 { top: calc(50% + var(--imgh) * var(--s) / 2); }
+
+.pl-corner--img-tl {
+  left: calc(50% - var(--imgw) * var(--s) / 2 - 10 * var(--s));
+  top:  calc(50% - var(--imgh) * var(--s) / 2 - 10 * var(--s));
+  opacity: 1;
+}
+.pl-corner--img-tr {
+  left: calc(50% + var(--imgw) * var(--s) / 2 - 10 * var(--s));
+  top:  calc(50% - var(--imgh) * var(--s) / 2 - 10 * var(--s));
+  transform: rotate(90deg);
+  opacity: 1;
+}
+.pl-corner--img-br {
+  left: calc(50% + var(--imgw) * var(--s) / 2 - 10 * var(--s));
+  top:  calc(50% + var(--imgh) * var(--s) / 2 - 10 * var(--s));
+  transform: rotate(180deg);
+  opacity: 1;
+}
+
+/* --- Light beam · follows the media frame -------------------
+   Shape drawn with a clip-path driven by --imgw/--imgh, so the
+   lit top edge is exactly the door aperture and widens with it. */
+.pl-beam {
+  position: absolute;
+  left: 0;
+  top: calc(50% + var(--imgh) * var(--s) / 2);
+  width: calc(50vw + var(--imgw) * var(--s) / 2);
+  height: max(0px, calc(50vh - var(--imgh) * var(--s) / 2));
+  opacity: 0;
+  background: linear-gradient(193deg,
+    rgba(58, 57, 255, 0.7) 0%,
+    rgba(58, 57, 255, 0.28) 38%,
+    rgba(58, 57, 255, 0) 70%);
+  clip-path: polygon(
+    calc(100% - var(--imgw) * var(--s)) 0,
+    100% 0,
+    100% 100%,
+    0 100%
+  );
+}
+
+/* --- Media frame · opens like a door ------------------------ */
+.pl-media {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: calc(var(--imgw) * var(--s));
+  height: calc(var(--imgh) * var(--s));
+  transform: translate(-50%, -50%);
+  overflow: hidden;
+  opacity: 0;
+}
+.pl-media__img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  will-change: transform;
+}
+.pl-media__tint {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(176.5deg, rgba(58, 57, 255, 0) 83%, rgba(58, 57, 255, 0.4) 97%);
+}
+
+/* ============================================================
+   MAIN PAGE  ·  Hero scroll stage
+   (Figma 191:184 → 194:308 → 194:345)
+   ============================================================ */
+
+.site {
+  position: relative;
+  width: 100vw;
+  background: #fff;
+}
+
+/* during the preloader the site is clipped to one design screen,
+   so the reveal card is a bounded 1440×900 sheet with the header */
+body.is-loading .site {
+  height: calc(900 * var(--s));
+  overflow: hidden;
+  visibility: hidden;
+}
+
+.scroll-stage {
+  position: relative;
+  /* one design screen + scrubbed scroll distance:
+     2 phases × 1200px of scroll each — unhurried, no jumps */
+  height: calc(3300 * var(--s));
+}
+.stage-sticky {
+  position: sticky;
+  top: 0;
+  /* real 100vh, not calc(900*s) — the ScrollTrigger scrub range on
+     #scroll-stage is (stageHeight - viewportHeight) regardless of this
+     element's height, so only height:100vh makes the native CSS sticky
+     pin last exactly as long as the scrub range: it un-sticks exactly
+     when scrub reaches progress 1. Any mismatch (900*s ≠ real vh, true
+     on most screens since design aspect is 1440:900) makes the sticky
+     detach early/late, which reads as the whole hero snapping/jumping
+     mid-scroll. Same fix already applied to .d-sticky (artists). */
+  height: 100vh;
+  overflow: hidden;
+}
+
+/* --- Header -------------------------------------------------- */
+.header { position: absolute; inset: 0 0 auto 0; z-index: 10; background: #fff; }
+
+.header__top {
+  display: flex;
+  justify-content: center;
+  gap: calc(16 * var(--s));
+  padding: calc(28 * var(--s)) calc(80 * var(--s)) calc(16 * var(--s));
+  border-bottom: 1px solid #ececec;
+}
+.header__clock {
+  font-size: calc(14 * var(--s));
+  line-height: calc(17 * var(--s));
+  letter-spacing: calc(-0.28 * var(--s));
+  font-weight: 500;
+  color: var(--clock-gray);
+  font-variant-numeric: tabular-nums;
+}
+
+.header__menu {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: calc(20 * var(--s)) calc(80 * var(--s));
+}
+.logo { display: flex; align-items: center; gap: calc(12 * var(--s)); }
+.spark { width: calc(16 * var(--s)); height: calc(16 * var(--s)); flex: none; }
+.spark--sm { width: calc(14 * var(--s)); height: calc(14 * var(--s)); }
+.spark--blue rect { fill: var(--blue); }
+.spark--orange rect { fill: var(--orange); }
+.logo__name {
+  font-size: calc(20 * var(--s));
+  line-height: calc(24 * var(--s));
+  letter-spacing: calc(-0.4 * var(--s));
+  font-weight: 500;
+}
+.menu-btn {
+  font-size: calc(16 * var(--s));
+  line-height: calc(20 * var(--s));
+  letter-spacing: calc(-0.32 * var(--s));
+  font-weight: 500;
+}
+
+/* --- Hero ---------------------------------------------------- */
+.hero__center {
+  position: absolute;
+  top: calc(250 * var(--s));
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: calc(28 * var(--s));
+  z-index: 3;
+}
+.hero__title {
+  font-size: calc(64 * var(--s));
+  line-height: calc(68 * var(--s));
+  letter-spacing: calc(-1.28 * var(--s));
+  font-weight: 400;
+  text-align: center;
+  white-space: nowrap;
+}
+.hero__line { display: block; }
+.hero__title .w { display: inline-block; }
+
+.btn--start {
+  display: flex;
+  align-items: center;
+  gap: calc(12 * var(--s));
+  padding: calc(14 * var(--s)) calc(20 * var(--s));
+  border-radius: calc(40 * var(--s));
+  background: rgba(58, 57, 255, 0.01);
+  border: 0.6px solid #fff;
+  box-shadow: 0 calc(2 * var(--s)) calc(14 * var(--s)) rgba(0, 0, 0, 0.07);
+  font-size: calc(16 * var(--s));
+  line-height: calc(20 * var(--s));
+  letter-spacing: calc(-0.32 * var(--s));
+  font-weight: 500;
+  transition: box-shadow 0.3s ease, transform 0.3s ease;
+}
+.btn--start:hover { box-shadow: 0 calc(4 * var(--s)) calc(20 * var(--s)) rgba(0, 0, 0, 0.12); transform: translateY(-1px); }
+
+/* --- Artbrush script text ------------------------------------ */
+.hero__script {
+  position: absolute;
+  top: calc(560 * var(--s));
+  left: 50%;
+  transform: translateX(-50%);
+  font-family: "ArtBrush", cursive;
+  font-size: calc(140 * var(--s));
+  line-height: calc(140 * var(--s));
+  letter-spacing: calc(-2.8 * var(--s));
+  text-align: center;
+  white-space: nowrap;
+  z-index: 1;
+}
+
+/* --- Showreel card ------------------------------------------- */
+/* geometry (top/width/height) is scrub-driven from JS            */
+.showreel {
+  position: absolute;
+  top: calc(600 * var(--s));
+  left: 50%;
+  transform: translateX(-50%);
+  width: calc(520 * var(--s));
+  height: calc(300 * var(--s));
+  border-radius: calc(12 * var(--s)) calc(12 * var(--s)) 0 0;
+  overflow: hidden;
+  background: #0b0b0e;
+  z-index: 2;
+}
+.showreel__video {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  /* Chrome can drop the parent's corner clipping on composited video
+     while the card is resized per-frame — round the video itself too */
+  border-radius: inherit;
+}
+
+/* Floating "Play showreel" chip — follows the cursor via JS */
+.btn--showreel {
+  position: absolute;
+  left: 0;
+  top: 0;
+  padding: calc(10 * var(--s)) calc(20 * var(--s));
+  border-radius: calc(40 * var(--s));
+  background: rgba(0, 0, 0, 0.25);
+  border: 0.6px solid #fff;
+  color: #fff;
+  font-size: calc(16 * var(--s));
+  line-height: calc(20 * var(--s));
+  letter-spacing: calc(-0.32 * var(--s));
+  font-weight: 500;
+  white-space: nowrap;
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
+  opacity: 0;
+  pointer-events: none;
+  will-change: transform;
+}
+
+.showreel.is-expanded { z-index: 300; }
+
+/* --- Curated talent (Figma 194:345 / 195:13) ------------------ */
+.curated {
+  position: absolute;
+  top: calc(640 * var(--s));
+  left: 50%;
+  transform: translateX(-50%) translateY(calc(420 * var(--s)));
+  font-size: calc(64 * var(--s));
+  line-height: calc(68 * var(--s));
+  letter-spacing: calc(-1.28 * var(--s));
+  font-weight: 400;
+  text-align: center;
+  white-space: nowrap;
+  opacity: 0;
+}
+
+/* ============================================================
+   ABOUT · pinned story stage (Figma 195:166 → 195:326)
+   phase 1 — camera flies through "A new model for brand design"
+   phase 2 — blue takeover with "Traditional agencies…"
+   phase 3 — "We build brands with:" + chip carousel
+   ============================================================ */
+.about-stage {
+  position: relative;
+  /* one design screen + 3 scrubbed phases (1200/1000/1200) */
+  height: calc(4300 * var(--s));
+  background: #fff;
+}
+.about-sticky {
+  position: sticky;
+  top: 0;
+  /* real 100vh — see .stage-sticky comment. Also fixes the "A new" /
+     bigword / "We build brands with:" content sitting centered on
+     calc(900*s) instead of the real viewport, which on any screen
+     wider than the 1440:900 design ratio reads as content sagging
+     below true vertical center. */
+  height: 100vh;
+  overflow: hidden;
+}
+
+/* --- backgrounds --------------------------------------------- */
+.about-bg { position: absolute; inset: 0; opacity: 0; pointer-events: none; }
+.about-bg--radial {
+  background: radial-gradient(ellipse 62% 58% at 50% 50%,
+    #3a39ff 0%,
+    rgba(58, 57, 255, 0.82) 32%,
+    rgba(58, 57, 255, 0.32) 58%,
+    rgba(255, 255, 255, 0) 80%);
+  transform: scale(0.7);
+  will-change: transform, opacity;
+}
+.about-bg--solid { background: var(--blue); }
+
+/* --- big pass-through word (195:201) --------------------------
+   each of "model / for / brand / design" flies by at a fixed
+   400px — no scroll scaling — with a left-faint → right-blue
+   gradient, then the 52px sentence assembles (195:205) */
+.about-bigword {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  font-size: calc(400 * var(--s));
+  /* extra line-height (not 1) so descenders like "g" have room to
+     paint fully — the mask-image below clips to this exact box,
+     unlike normal text which is free to overflow a tight line box */
+  line-height: 1.25;
+  letter-spacing: calc(-8 * var(--s));
+  font-weight: 400;
+  white-space: nowrap;
+  color: transparent;
+  background-image: linear-gradient(90deg,
+    rgba(58, 57, 255, 0.05) 0%,
+    rgba(58, 57, 255, 0.38) 40%,
+    #3a39ff 88%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  opacity: 0;
+  /* no will-change here: promoting a background-clip:text element
+     to its own layer breaks the gradient text paint in Chrome */
+}
+
+/* --- line 1 · assembled sentence (195:166 / 195:205) ---------- */
+.about-line1 {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  font-size: calc(52 * var(--s));
+  line-height: calc(56 * var(--s));
+  letter-spacing: calc(-1.04 * var(--s));
+  font-weight: 400;
+  white-space: nowrap;
+  will-change: opacity;
+}
+.about-line1 .aw {
+  display: inline-block;
+  color: transparent;
+  -webkit-background-clip: text;
+  background-clip: text;
+  /* 300%-wide sweep: black → blue → transparent; JS slides it */
+  background-image: linear-gradient(90deg,
+    #000 0%, #000 33.3%, #3a39ff 50%, rgba(58, 57, 255, 0) 66.6%, rgba(58, 57, 255, 0) 100%);
+  background-size: 300% 100%;
+  background-position: 100% 0;
+  background-repeat: no-repeat;
+}
+.about-line1 .aw--blue {
+  /* "design" resolves to solid blue (195:209) */
+  background-image: linear-gradient(90deg,
+    #3a39ff 0%, #3a39ff 33.3%, #6d6cff 50%, rgba(58, 57, 255, 0) 66.6%, rgba(58, 57, 255, 0) 100%);
+}
+
+/* --- line 2 · white sentence on blue (195:215/219) ------------ */
+.about-line2 {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  font-size: calc(52 * var(--s));
+  line-height: calc(56 * var(--s));
+  letter-spacing: calc(-1.04 * var(--s));
+  font-weight: 400;
+  color: #fff;
+  white-space: nowrap;
+}
+.about-line2 .aw2 { display: inline-block; opacity: 0; }
+
+/* --- phase 3 · label + chip carousel (195:224…326) ------------ */
+.about-build {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  display: flex;
+  align-items: center;
+  gap: calc(24 * var(--s));
+  opacity: 0;
+}
+.about-build__label {
+  font-size: calc(52 * var(--s));
+  line-height: calc(56 * var(--s));
+  letter-spacing: calc(-1.04 * var(--s));
+  font-weight: 500;
+  white-space: nowrap;
+}
+.about-chips {
+  position: relative;
+  height: calc(80 * var(--s));
+  /* width set by JS to the widest chip */
+}
+.chip {
+  position: absolute;
+  left: 0;
+  top: 0;
+  display: flex;
+  align-items: center;
+  gap: calc(12 * var(--s));
+  padding: calc(14 * var(--s)) calc(24 * var(--s));
+  border-radius: calc(40 * var(--s));
+  background: rgba(58, 57, 255, 0.01);
+  border: 0.6px solid #fff;
+  box-shadow: 0 calc(4 * var(--s)) calc(24 * var(--s)) rgba(0, 0, 0, 0.08);
+  white-space: nowrap;
+  opacity: 0;
+  will-change: transform, opacity;
+}
+.chip span {
+  font-size: calc(52 * var(--s));
+  line-height: calc(52 * var(--s));
+  letter-spacing: calc(-1.04 * var(--s));
+  font-weight: 500;
+  color: var(--blue);
+}
+.spark--chip { width: calc(36 * var(--s)); height: calc(36 * var(--s)); }
+/* ============================================================
+   MENU  ·  Figma 373:2384, motion after rickallan.work
+   ============================================================ */
+.menu-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 400;
+  background: rgba(72, 72, 72, 0.3);
+  -webkit-backdrop-filter: blur(10px);
+  backdrop-filter: blur(10px);
+  opacity: 0;
+  visibility: hidden;
+}
+
+.menu-panel {
+  position: absolute;
+  top: calc(20 * var(--s));
+  right: calc(20 * var(--s));
+  width: calc(284 * var(--s));
+  height: calc(459 * var(--s));
+  background: #fff;
+  border-radius: calc(8 * var(--s));
+  box-shadow: 0 calc(24 * var(--s)) calc(80 * var(--s)) rgba(0, 0, 0, 0.18);
+  transform-origin: top right;
+  overflow: hidden;
+}
+
+/* tabs row · panel-local y 12 (32 − 20) */
+.menu-panel__tabs {
+  position: absolute;
+  top: calc(12 * var(--s));
+  left: calc(12 * var(--s));
+  right: calc(12 * var(--s));
+  display: flex;
+  align-items: center;
+  gap: calc(10 * var(--s));
+}
+.menu-tab {
+  font-size: calc(14 * var(--s));
+  line-height: calc(18 * var(--s));
+  letter-spacing: calc(-0.28 * var(--s));
+  font-weight: 400;
+  color: #000;
+  /* plain tabs carry no horizontal padding (Figma 373:2444…2446) —
+     otherwise the row overflows and pushes the × out of the panel */
+  padding: calc(4 * var(--s)) 0;
+  border-radius: calc(4 * var(--s));
+  transition: color 0.25s ease, background 0.25s ease;
+}
+.menu-tab.is-active {
+  background: var(--blue);
+  color: #fff;
+  font-weight: 500;
+  padding: calc(4 * var(--s)) calc(10 * var(--s));
+}
+.menu-close {
+  margin-left: auto;
+  width: calc(16 * var(--s));
+  height: calc(16 * var(--s));
+  display: grid;
+  place-items: center;
+  transition: transform 0.3s ease;
+}
+.menu-close img { width: calc(16 * var(--s)); height: calc(16 * var(--s)); }
+.menu-close:hover { transform: rotate(90deg); }
+
+.menu-panel__divider {
+  position: absolute;
+  top: calc(52 * var(--s));
+  left: 0;
+  right: 0;
+  height: 1px;
+  background: #ececec;
+}
+.menu-panel__divider--soc-top { top: calc(350 * var(--s)); }
+.menu-panel__divider--soc-bottom { top: calc(390 * var(--s)); }
+
+/* body column · panel-local (12, 72) */
+.menu-panel__body {
+  position: absolute;
+  top: calc(72 * var(--s));
+  left: calc(12 * var(--s));
+  display: flex;
+  flex-direction: column;
+  gap: calc(16 * var(--s));
+  align-items: flex-start;
+}
+.menu-hello-gray {
+  font-size: calc(16 * var(--s));
+  line-height: calc(20 * var(--s));
+  letter-spacing: calc(-0.32 * var(--s));
+  color: #a1a1a1;
+  margin-bottom: calc(4 * var(--s));
+}
+.menu-hello-black {
+  font-size: calc(16 * var(--s));
+  line-height: calc(20 * var(--s));
+  letter-spacing: calc(-0.32 * var(--s));
+  color: #000;
+}
+.menu-panel__media {
+  width: calc(260 * var(--s));
+  height: calc(150 * var(--s));
+  border-radius: calc(8 * var(--s));
+  overflow: hidden;
+}
+.menu-panel__media img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+.menu-panel__caption {
+  font-size: calc(14 * var(--s));
+  line-height: calc(18 * var(--s));
+  letter-spacing: calc(-0.28 * var(--s));
+  color: #000;
+}
+
+/* socials · centered between the two dividers */
+.menu-socials {
+  position: absolute;
+  top: calc(362 * var(--s));
+  left: 0;
+  right: 0;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: calc(24 * var(--s));
+}
+.menu-socials a { display: block; width: calc(16 * var(--s)); height: calc(16 * var(--s)); opacity: 0.9; transition: opacity 0.25s ease; }
+.menu-socials a:hover { opacity: 0.5; }
+.menu-socials a img { width: 100%; height: 100%; }
+/* Figma exports these two icons pre-flipped (the design re-flips them
+   with rotate(180°)·scaleX(−1) ≡ scaleY(−1)) — mirror them back */
+.menu-socials a[aria-label="LinkedIn"] img,
+.menu-socials a[aria-label="Instagram"] img { transform: scaleY(-1); }
+.menu-socials__sep { width: 1px; height: calc(16 * var(--s)); background: #ececec; }
+
+.btn--contact {
+  position: absolute;
+  left: calc(12 * var(--s));
+  right: calc(12 * var(--s));
+  top: calc(406 * var(--s));
+  height: calc(41 * var(--s));
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: calc(12 * var(--s));
+  border-radius: calc(40 * var(--s));
+  background: rgba(58, 57, 255, 0.01);
+  border: 0.6px solid #fff;
+  box-shadow: 0 calc(2 * var(--s)) calc(12 * var(--s)) rgba(0, 0, 0, 0.08);
+  font-size: calc(14 * var(--s));
+  line-height: calc(18 * var(--s));
+  letter-spacing: calc(-0.28 * var(--s));
+  font-weight: 500;
+  transition: box-shadow 0.3s ease;
+}
+.btn--contact:hover { box-shadow: 0 calc(4 * var(--s)) calc(18 * var(--s)) rgba(0, 0, 0, 0.14); }
+
+/* ============================================================
+   ARTISTS / DESIGNERS · aurora block (279:141 → 279:791)
+   ============================================================ */
+.artists {
+  position: relative;
+  z-index: 1;
+  background: #000;
+  color: #fff;
+}
+
+/* sticky full-viewport aurora, pulled under the content with a
+   negative margin so it doesn't reserve its own 100vh of layout */
+.artists__fx {
+  position: sticky;
+  top: 0;
+  height: 100vh;
+  margin-bottom: -100vh;
+  z-index: 0;
+  pointer-events: none;
+}
+#fx-canvas { display: block; width: 100%; height: 100%; }
+
+/* --- intro scrub -------------------------------------------- */
+.d-stage {
+  position: relative;
+  z-index: 1;
+  height: calc(7400 * var(--s));
+}
+/* stays real 100vh (unlike .stage-sticky/.about-sticky's calc(900*s))
+   — on a wide/short window calc(900*s) would grow TALLER than the
+   real viewport and the pinned box would spill below the fold
+   (content invisible, not just cropped). 100vh always matches what's
+   actually on screen; main.js compensates by shrinking --z so the
+   field (856px tall at its native 380-wide-card size) never exceeds
+   the real viewport height, on any aspect ratio. */
+.d-sticky {
+  position: sticky;
+  top: 0;
+  height: 100vh;
+  overflow: hidden;
+  pointer-events: none; /* animation-only — never intercept clicks */
+}
+
+/* the 3×7 field of plaques — scaled/translated by JS via --z */
+/* Figma 279:791 rhythm: 380-wide plaques, ~54px air between both
+   columns and rows, 77px tall — never pressed together */
+.d-field {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: calc(1249 * var(--s));
+  transform: translate(-50%, -50%) scale(var(--z, 2.87));
+  transform-origin: 50% 50%;
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  column-gap: calc(54 * var(--s));
+  row-gap: calc(54 * var(--s));
+  will-change: transform;
+}
+
+/* one plaque — a viewfinder that holds either the sentence or a
+   named person, cross-faded during the zoom-out */
+.d-plaque {
+  position: relative;
+  /* 40px avatar + exactly 18px of air above and below */
+  height: calc(76 * var(--s));
+  padding: calc(18 * var(--s)) 0;
+  box-sizing: border-box;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+}
+.d-plaque__line {
+  position: absolute;
+  white-space: nowrap;
+  font-size: calc(14 * var(--s));   /* × zoom(2.87) ≈ 40px visual, like 279:216 */
+  letter-spacing: calc(-0.3 * var(--s));
+  color: #fff;
+}
+.d-plaque__person { position: absolute; }
+
+/* viewfinder decoration (shared by intro plaques + directory cells).
+   Corners are NOT the reticle icon — they're two independent tick
+   lines (one along each axis) that stop short of meeting, measured
+   off the 279:791 export at 4x: each tick runs from the outer margin
+   edge inward ~9.5px, then a gap, then the card's own 1px border
+   picks up at ~15.35px (the plaque edge) — the two ticks never touch
+   each other or the border. Sides keep the artists.svg reticle. */
+.d-corner {
+  position: absolute;
+  width: calc(15.35 * var(--s));
+  height: calc(15.35 * var(--s));
+  pointer-events: none;
+}
+.d-corner::before, .d-corner::after {
+  content: "";
+  position: absolute;
+  background: rgba(255, 255, 255, 0.4);
+}
+/* ::before = the tick running along this corner's horizontal axis,
+   ::after = the tick running along its vertical axis */
+.d-corner--tl {
+  left: calc(-15.35 * var(--s));
+  top: calc(-15.35 * var(--s));
+}
+.d-corner--tl::before { left: 0; bottom: 0; width: calc(9.5 * var(--s)); height: 1px; }
+.d-corner--tl::after { right: 0; top: 0; width: 1px; height: calc(9.5 * var(--s)); }
+
+.d-corner--tr {
+  right: calc(-15.35 * var(--s));
+  top: calc(-15.35 * var(--s));
+}
+.d-corner--tr::before { right: 0; bottom: 0; width: calc(9.5 * var(--s)); height: 1px; }
+.d-corner--tr::after { left: 0; top: 0; width: 1px; height: calc(9.5 * var(--s)); }
+
+.d-corner--bl {
+  left: calc(-15.35 * var(--s));
+  bottom: calc(-15.35 * var(--s));
+}
+.d-corner--bl::before { left: 0; top: 0; width: calc(9.5 * var(--s)); height: 1px; }
+.d-corner--bl::after { right: 0; bottom: 0; width: 1px; height: calc(9.5 * var(--s)); }
+
+.d-corner--br {
+  right: calc(-15.35 * var(--s));
+  bottom: calc(-15.35 * var(--s));
+}
+.d-corner--br::before { right: 0; top: 0; width: calc(9.5 * var(--s)); height: 1px; }
+.d-corner--br::after { left: 0; bottom: 0; width: 1px; height: calc(9.5 * var(--s)); }
+
+.d-ret {
+  position: absolute;
+  width: calc(9.77 * var(--s));
+  height: calc(9.77 * var(--s));
+  background: url("../assets/figma/artists.svg") no-repeat center / contain;
+  filter: invert(1);
+  opacity: 0.6;
+  pointer-events: none;
+}
+.d-ret--l { left: calc(-15.35 * var(--s)); top: 50%; margin-top: calc(-4.885 * var(--s)); }
+.d-ret--r { right: calc(-15.35 * var(--s)); top: 50%; margin-top: calc(-4.885 * var(--s)); }
+.d-ret--t { top: calc(-15.35 * var(--s)); left: 50%; margin-left: calc(-4.885 * var(--s)); }
+.d-ret--b { bottom: calc(-15.35 * var(--s)); left: 50%; margin-left: calc(-4.885 * var(--s)); }
+
+/* "All disciplines" — the very first single plaque title */
+.d-firstword {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  font-size: calc(40 * var(--s));
+  letter-spacing: calc(-0.8 * var(--s));
+  color: #fff;
+  pointer-events: none;
+}
+.d-scrollhint {
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+  bottom: calc(150 * var(--s));
+  font-size: calc(13 * var(--s));
+  letter-spacing: calc(0.5 * var(--s));
+  color: rgba(255, 255, 255, 0.45);
+  pointer-events: none;
+}
+
+.d-person { display: flex; align-items: center; gap: calc(14 * var(--s)); }
+.d-person__avatar {
+  width: calc(40 * var(--s));
+  height: calc(40 * var(--s));
+  border-radius: 50%;
+  object-fit: cover;
+  filter: grayscale(1) brightness(0.92) contrast(1.05);
+  transition: filter 0.4s ease;
+}
+.d-person__name {
+  font-size: calc(16 * var(--s));
+  letter-spacing: calc(-0.3 * var(--s));
+  color: #fff;
+  white-space: nowrap;
+}
+
+/* --- OVER 100 BRAND DESIGNERS · knockout panel (279:4424) ----
+   verbatim Figma layering: a blur-20 rounded pane (4478) beneath the
+   exported Subtract vector — white 18% fill + noise + its own
+   backdrop blur, with the letters cut out of the path */
+.d-over {
+  position: absolute;
+  /* centred pane: an even 80px margin on every side of the viewport */
+  inset: calc(80 * var(--s));
+  opacity: 0;
+  pointer-events: none;
+  will-change: transform, opacity;
+}
+.d-over__panel {
+  position: absolute;
+  inset: 0;
+  border-radius: calc(12 * var(--s));
+  -webkit-backdrop-filter: blur(20px);
+  backdrop-filter: blur(20px);
+}
+.d-over__knock { position: absolute; inset: 0; }
+.d-over__knock svg { width: 100%; height: 100%; display: block; }
+
+/* ============================================================
+   WORKS · stat carousel → CREATE project showcase, ONE continuous
+   pinned scrub (Figma 203:47 → 205:182 → 1395:248 → 205:276 → 205:295):
+   "Brands created 50+" → "Industries served 12" → Instagram-style post
+   photo (bg crossfades black → #e1e1e1) → the photo grows in place and
+   cross-dissolves into the Arko video → further scroll crossfades
+   project 1→2→3. Two formerly separate pinned sections were merged into
+   one so the hand-off is a single scrub, never a fresh scroll-in.
+   ============================================================ */
+.works-stage {
+  position: relative;
+  height: calc(6000 * var(--s));
+  background: #000;
+}
+/* stays real 100vh (unlike calc(900*s)) — on a wide/short window
+   calc(900*s) would grow taller than the real viewport and get cropped
+   by overflow:hidden. 100vh always matches what's actually on screen;
+   main.js compensates by shrinking --wfit on .works-inner so the whole
+   1440×900 composition (cards, CREATE word, labels) always fits with a
+   comfortable margin, on any aspect ratio. Full-bleed layers (.works-bg,
+   .proj-media once zoomed) are direct children of the real-100vh sticky,
+   so they're unaffected by the --wfit scale. */
+/* full-viewport, untransformed box — position:sticky makes it its own
+   stacking context, and it is the containing block that .proj-media grows
+   into (JS reparents the media here for the full-bleed zoom, see
+   initWorksStage). Stacking INSIDE it: bg layers (auto) < .proj-media
+   (z-index:1 while grown) < .works-inner (z-index:2, the CREATE word,
+   labels and button). */
+.works-sticky {
+  position: sticky;
+  top: 0;
+  height: 100vh;
+  overflow: hidden;
+}
+
+.works-bg { position: absolute; inset: 0; }
+.works-bg--dark { background: #000; }              /* stat carousel */
+.works-bg--light { background: #e1e1e1; }          /* inst post (Figma 205:197) */
+/* CREATE / project view (Figma 1395:248) — warm brown so the white CREATE
+   word reads before the video fills; crossfaded in during the grow */
+.works-bg--brown { background: #512204; opacity: 0; }
+
+.works-inner {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: calc(1440 * var(--s));
+  height: calc(900 * var(--s));
+  transform: translate(-50%, -50%) scale(var(--wfit, 1));
+  transform-origin: 50% 50%;
+  /* z-layer 1 — below the grown .proj-media (z-index:2), so the fixed
+     Instagram header (a child here) gets covered as the image grows */
+  z-index: 1;
+}
+
+/* z-layer 3 — the CREATE word, per-project labels and button, above the
+   grown video (z-index:2). Same scaled 1440×900 box as .works-inner. */
+.proj-overlay {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: calc(1440 * var(--s));
+  height: calc(900 * var(--s));
+  transform: translate(-50%, -50%) scale(var(--wfit, 1));
+  transform-origin: 50% 50%;
+  z-index: 3;
+  pointer-events: none; /* never intercept the cursor-scatter mousemove */
+}
+
+.work-card {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+}
+.work-card--stat {
+  width: calc(520 * var(--s));
+  height: calc(486 * var(--s));
+  border: 1px solid #4c4c4c;
+  border-radius: calc(100 * var(--s));
+  background: #000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.work-card__inner {
+  display: flex;
+  align-items: center;
+  gap: calc(24 * var(--s));
+  color: #fff;
+  white-space: nowrap;
+  font-family: "DM Sans", sans-serif;
+}
+.work-card__label {
+  font-size: calc(20 * var(--s));
+  letter-spacing: calc(-0.4 * var(--s));
+}
+.work-card__number {
+  font-size: calc(140 * var(--s));
+  letter-spacing: calc(-2.8 * var(--s));
+  font-variant-numeric: tabular-nums;
+}
+
+/* the post photo → project video stack (Figma 205:197 → 1395:248): the
+   image portion of the card (below the fixed header), it grows to full-bleed
+   via JS (see initWorksStage), cross-dissolving image → Arko video, then the
+   videos swipe up 1 → 2 → 3. Offset +28px down so its top edge meets the
+   header's bottom edge (no overlap → the header stays visible until covered). */
+.proj-media {
+  position: absolute;
+  left: 50%;
+  top: calc(50% + 28 * var(--s));
+  width: calc(420 * var(--s));
+  height: calc(484 * var(--s));
+  /* centred via GSAP xPercent/yPercent (initWorksStage), not a CSS
+     transform — GSAP needs to own the transform so it can switch to
+     absolute left/top during the zoom without a leftover -50% translate
+     double-offsetting it */
+  border-radius: 0 0 calc(12 * var(--s)) calc(12 * var(--s));
+  /* own clip: once it grows full-bleed it escapes the ancestor's
+     overflow:hidden, and it clips the videos waiting below during the swipe */
+  overflow: hidden;
+  background: #111;
+  opacity: 0;
+}
+.proj-media__layer {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  opacity: 0;
+}
+/* stacking so a later video, swiping up from below, covers the earlier one */
+#proj-media-img { opacity: 1; object-position: center bottom; z-index: 0; }
+#proj-media-video-1 { z-index: 1; }
+#proj-media-video-2 { z-index: 2; }
+#proj-media-video-3 { z-index: 3; }
+.proj-media__tint {
+  position: absolute;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.35);
+  opacity: 0;
+  z-index: 4;
+}
+/* split caption — "Visual" left of centre, "System" right (Figma
+   205:223/224), each straddling the docked card edge, never joined in the
+   middle. Positioned in the stable .proj-overlay layer (1440×900 composition
+   coords) at the docked card's fixed anchors, so it holds its size and its
+   horizontal position exactly — it only rises in with the card (JS y-offset)
+   and fades out by the time the post has grown 15%. */
+.proj-post__cap {
+  position: absolute;
+  top: calc(478 * var(--s));
+  /* NOT transform:translate(-50%,-50%) here — GSAP always drives this
+     element's transform (xPercent/yPercent) before it's ever visible, so a
+     static transform is dead weight, and it's actively harmful: GSAP's
+     first xPercent/yPercent set() on a node parses whatever transform is
+     already resolved on it, and a pre-existing "-50%" here gets baked into
+     an extra baseline pixel offset on top of GSAP's own -50%, doubling the
+     leftward shift (reproduced on #proj-cap-r — "System" rendered ~82px
+     left of its correct centre, spilling off the card). Leave this
+     unset — GSAP's translate(-50%,-50%) equivalent is enough. */
+  font-family: "DM Sans", sans-serif;
+  font-size: calc(52 * var(--s));
+  line-height: calc(56 * var(--s));
+  letter-spacing: calc(-1.04 * var(--s));
+  color: #fff;
+  white-space: nowrap;
+  z-index: 5;
+}
+.proj-post__cap--l { left: calc(589 * var(--s)); }
+.proj-post__cap--r { left: calc(833 * var(--s)); }
+
+/* Instagram header bar (Figma 205:209/220) — fixed 420×56 card header,
+   anchored just above the image (design y 180–236, i.e. centre − 242).
+   It never grows or fades; the growing image simply covers it. */
+.proj-post__head {
+  position: absolute;
+  left: 50%;
+  top: calc(50% - 242 * var(--s));
+  width: calc(420 * var(--s));
+  height: calc(56 * var(--s));
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 calc(14 * var(--s));
+  background: #fff;
+  border-radius: calc(12 * var(--s)) calc(12 * var(--s)) 0 0;
+  opacity: 0;
+}
+.proj-post__who { display: flex; align-items: center; gap: calc(12 * var(--s)); }
+.proj-post__avatar {
+  width: calc(28 * var(--s));
+  height: calc(28 * var(--s));
+  border-radius: 50%;
+  object-fit: cover;
+}
+.proj-post__brand {
+  font-family: "DM Sans", sans-serif;
+  font-weight: 500;
+  font-size: calc(14 * var(--s));
+  letter-spacing: calc(-0.28 * var(--s));
+  color: #000;
+}
+.proj-post__more { width: calc(24 * var(--s)); height: calc(24 * var(--s)); fill: #000; }
+
+.proj-info {
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  font-family: "DM Sans", sans-serif;
+  color: #fff;
+  pointer-events: none;
+}
+.proj-info.is-active { opacity: 1; }
+.proj-info__label {
+  position: absolute;
+  top: calc(422 * var(--s));
+  font-size: calc(52 * var(--s));
+  line-height: calc(56 * var(--s));
+  letter-spacing: calc(-1.04 * var(--s));
+  white-space: nowrap;
+}
+.proj-info__label--l { left: calc(60 * var(--s)); }
+.proj-info__label--r { right: calc(60 * var(--s)); }
+.proj-info__desc {
+  position: absolute;
+  left: 50%;
+  top: calc(800 * var(--s));
+  transform: translateX(-50%);
+  width: calc(305 * var(--s));
+  font-size: calc(16 * var(--s));
+  line-height: calc(20 * var(--s));
+  letter-spacing: calc(-0.32 * var(--s));
+  text-align: center;
+}
+.proj-info__index, .proj-info__year {
+  position: absolute;
+  top: calc(840 * var(--s));
+  font-size: calc(16 * var(--s));
+  letter-spacing: calc(-0.32 * var(--s));
+}
+.proj-info__index { left: calc(60 * var(--s)); }
+.proj-info__year { right: calc(60 * var(--s)); }
+
+/* one intact word CREATE, centred — the letters sit in natural inline
+   flow so at rest it reads as a solid word; the cursor-repulsion physics
+   (initCreatScatter) only translates/rotates the inner spans, springing
+   them back to zero (the clean word) */
+.creat-word {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  display: flex;
+  align-items: center;
+  font-family: "DM Sans", sans-serif;
+  font-weight: 500;
+  font-size: calc(250 * var(--s));
+  line-height: 1;
+  letter-spacing: calc(-5 * var(--s));
+  color: #fff;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+.creat-letter { display: inline-block; }
+.creat-letter__in { display: inline-block; will-change: transform; }
+
+.btn--view-project {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  display: flex;
+  align-items: center;
+  gap: calc(12 * var(--s));
+  padding: calc(14 * var(--s)) calc(20 * var(--s));
+  border-radius: calc(40 * var(--s));
+  background: rgba(255, 255, 255, 0.10);
+  border: 0.6px solid rgba(255, 255, 255, 0.20);
+  /* frosted pill sitting in FRONT of the CREATE word (z-index:2 > the word's
+     auto z), blurring the letters that pass behind it */
+  backdrop-filter: blur(calc(20 * var(--s)));
+  -webkit-backdrop-filter: blur(calc(20 * var(--s)));
+  font-family: "DM Sans", sans-serif;
+  font-weight: 500;
+  font-size: calc(16 * var(--s));
+  letter-spacing: calc(-0.32 * var(--s));
+  color: #fff;
+  white-space: nowrap;
+  cursor: pointer;
+  z-index: 2;
+}
+
+/* ============================================================
+   INDUSTRIES · "Built across markets" — pinned scrub, three 2×2 packs
+   cycle on scroll; the active pack magnifies the hovered card
+   (ref.digital-style) and reveals its corner description + a
+   pointer-following "Play showreel" pill.
+   (Figma 205:336 → 205:461, 373:241 → 373:474)
+   ============================================================ */
+.industries-stage {
+  position: relative;
+  /* three settle-holds + two pack transitions, unhurried */
+  height: calc(7200 * var(--s));
+  background: #fff;
+}
+/* desktop: pack switching is wheel-driven (one gesture = one full pack
+   transition, timed not scroll-scrubbed — see initIndustriesStage), so the
+   stage only needs a modest buffer to stay pinned while stepping, not the
+   whole scrubbed scroll distance above. Touch keeps the tall scrubbed
+   height (continuous scroll, no wheel events to hijack). */
+.industries-stage.is-wheel-driven { height: 180vh; }
+.industries-sticky {
+  position: sticky;
+  top: 0;
+  height: 100vh;
+  overflow: hidden;
+  background: #fff;
+}
+/* the 1440×900 composition, uniformly shrunk by --ifit (set in JS from
+   the viewport height, like .works-inner's --wfit) so it always fits */
+.industries-inner {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: calc(1440 * var(--s));
+  height: calc(900 * var(--s));
+  transform: translate(-50%, -50%) scale(var(--ifit, 1));
+  transform-origin: 50% 50%;
+}
+
+/* --- shared heading --- */
+.ind-head {
+  position: absolute;
+  left: 50%;
+  top: calc(120 * var(--s));
+  transform: translateX(-50%);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: calc(28 * var(--s));
+  z-index: 4;
+}
+.ind-eyebrow {
+  display: flex;
+  align-items: center;
+  gap: calc(8 * var(--s));
+  font-weight: 500;
+  font-size: calc(16 * var(--s));
+  line-height: calc(20 * var(--s));
+  letter-spacing: calc(-0.32 * var(--s));
+  color: #000;
+}
+.ind-eyebrow .spark { width: calc(16 * var(--s)); height: calc(16 * var(--s)); }
+.ind-title {
+  font-weight: 400;
+  font-size: calc(52 * var(--s));
+  line-height: calc(56 * var(--s));
+  letter-spacing: calc(-1.04 * var(--s));
+  color: #000;
+  white-space: nowrap;
+}
+
+/* --- packs (each fills the 1440×900 inner; JS moves/fades them) --- */
+.ind-pack {
+  position: absolute;
+  inset: 0;
+  will-change: transform, opacity;
+}
+
+.ind-grid {
+  position: absolute;
+  left: 50%;
+  top: calc(50% + 125 * var(--s));
+  /* 520×520 box centred at the composition's centre cross (720,575).
+     Centring is done by GSAP (xPercent/yPercent:-50) so the scroll tween can
+     drive x/y without clobbering a CSS translate. */
+  width: calc(520 * var(--s));
+  height: calc(520 * var(--s));
+}
+/* Each card is pinned by the corner nearest the grid centre and grows OUTWARD
+   from that corner (transform-origin at the centre corner). On hover the cards
+   resize around a fixed 2px centre cross — the hovered corner reaches 280, its
+   vertical neighbour 250, horizontal 244, diagonal 214 (Figma 205:366). */
+.ind-card {
+  position: absolute;
+  width: calc(259 * var(--s));
+  height: calc(259 * var(--s));
+  padding: 0;
+  border: 0;
+  border-radius: calc(8 * var(--s));
+  overflow: hidden;
+  background: #ececec;
+  cursor: pointer;
+}
+.ind-card[data-corner="tl"] { right: calc(50% + 1 * var(--s)); bottom: calc(50% + 1 * var(--s)); transform-origin: 100% 100%; }
+.ind-card[data-corner="tr"] { left:  calc(50% + 1 * var(--s)); bottom: calc(50% + 1 * var(--s)); transform-origin: 0% 100%; }
+.ind-card[data-corner="bl"] { right: calc(50% + 1 * var(--s)); top:    calc(50% + 1 * var(--s)); transform-origin: 100% 0%; }
+.ind-card[data-corner="br"] { left:  calc(50% + 1 * var(--s)); top:    calc(50% + 1 * var(--s)); transform-origin: 0% 0%; }
+.ind-card img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+  pointer-events: none;
+}
+.ind-card.is-lifted { z-index: 3; }
+
+/* --- corner labels --- */
+.ind-label {
+  position: absolute;
+  font-weight: 400;
+  font-size: calc(32 * var(--s));
+  line-height: calc(36 * var(--s));
+  letter-spacing: calc(-0.64 * var(--s));
+  color: #000;
+  white-space: nowrap;
+  /* opacity is driven per pack in JS: category labels only appear once a
+     batch has fully settled in the centre, and fade out in place on scroll */
+  opacity: 0;
+}
+.ind-label--tl { left: calc(80 * var(--s)); top: calc(304 * var(--s)); }
+.ind-label--bl { left: calc(80 * var(--s)); top: calc(764 * var(--s)); }
+.ind-label--tr { right: calc(80 * var(--s)); top: calc(304 * var(--s)); }
+.ind-label--br { right: calc(80 * var(--s)); top: calc(764 * var(--s)); }
+
+/* --- corner descriptions (revealed on hover of the matching card) --- */
+.ind-desc {
+  position: absolute;
+  width: calc(270 * var(--s));
+  font-weight: 400;
+  font-size: calc(16 * var(--s));
+  line-height: calc(20 * var(--s));
+  letter-spacing: calc(-0.32 * var(--s));
+  color: #a1a1a1;
+  opacity: 0;
+  transform: translateY(calc(6 * var(--s)));
+  transition: opacity 0.35s ease, transform 0.35s ease;
+}
+.ind-desc.is-shown { opacity: 1; transform: none; }
+.ind-desc--tl { left: calc(80 * var(--s)); top: calc(356 * var(--s)); }
+.ind-desc--bl { left: calc(80 * var(--s)); top: calc(816 * var(--s)); }
+.ind-desc--tr { right: calc(80 * var(--s)); top: calc(356 * var(--s)); text-align: right; }
+.ind-desc--br { right: calc(80 * var(--s)); top: calc(816 * var(--s)); text-align: right; }
+
+/* --- shared "Play showreel" pill (follows the pointer over the grid) --- */
+.ind-pill {
+  position: absolute;
+  left: 0;
+  top: 0;
+  display: flex;
+  align-items: center;
+  opacity: 0;
+  pointer-events: none;
+  z-index: 6;
+  /* will-change:opacity here was tried as a fix for a first-hover paint
+     hitch, but it promotes .ind-pill to its own compositing layer, and the
+     child's backdrop-filter then blurs THAT isolated layer's (near-empty)
+     contents instead of the real page behind it — the blur visibly
+     disappeared. transform-only is safe (doesn't isolate backdrop-filter
+     the same way). */
+  will-change: transform;
+}
+.ind-pill__btn {
+  background: rgba(0, 0, 0, 0.1);
+  border: calc(0.6 * var(--s)) solid #fff;
+  border-radius: calc(40 * var(--s));
+  padding: calc(10 * var(--s)) calc(20 * var(--s));
+  font-weight: 500;
+  font-size: calc(16 * var(--s));
+  line-height: calc(20 * var(--s));
+  letter-spacing: calc(-0.32 * var(--s));
+  color: #fff;
+  white-space: nowrap;
+  backdrop-filter: blur(calc(4 * var(--s)));
+  -webkit-backdrop-filter: blur(calc(4 * var(--s)));
+}
+
+/* ============================================================
+   Clients · "Chosen by industry leaders" (Figma 205:507 / 250:390)
+   Black section: heading + subtitle fade-up-blur in on scroll; a full-width
+   infinite logo marquee that is draggable; a pointer-following "Grab me" pill
+   whose label resolves via a text-scramble effect on hover.
+   ============================================================ */
+.clients {
+  position: relative;
+  height: calc(860 * var(--s));
+  background: #000;
+  overflow: hidden;
+}
+.cl-head {
+  position: absolute;
+  left: 50%;
+  top: calc(136 * var(--s));
+  transform: translateX(-50%);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: calc(32 * var(--s));
+  width: 100%;
+  z-index: 2;
+}
+.cl-title {
+  font-weight: 400;
+  font-size: calc(52 * var(--s));
+  line-height: calc(56 * var(--s));
+  letter-spacing: calc(-1.04 * var(--s));
+  color: #fff;
+  text-align: center;
+}
+.cl-sub {
+  width: calc(313 * var(--s));
+  font-weight: 400;
+  font-size: calc(16 * var(--s));
+  line-height: calc(20 * var(--s));
+  letter-spacing: calc(-0.32 * var(--s));
+  color: #fff;
+  text-align: center;
+}
+
+/* --- marquee --- */
+.cl-marquee {
+  position: absolute;
+  left: 0;
+  top: calc(445 * var(--s));
+  width: 100%;
+  height: calc(240 * var(--s));
+  overflow: hidden;
+  cursor: grab;
+  z-index: 1;
+}
+.cl-marquee.is-dragging { cursor: grabbing; }
+.cl-track { display: flex; width: max-content; will-change: transform; }
+.cl-set { display: flex; }
+.cl-card {
+  flex: 0 0 auto;
+  width: calc(240 * var(--s));
+  height: calc(240 * var(--s));
+  margin-right: calc(20 * var(--s));
+  border: calc(1 * var(--s)) solid #4c4c4c;
+  border-radius: calc(8 * var(--s));
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+/* logos are trimmed to their true content box, then sized by WIDTH to match
+   the per-card widths in Figma (height follows the natural aspect) */
+.cl-logo { display: flex; align-items: center; justify-content: center; }
+.cl-logo img { display: block; height: auto; max-width: none; }
+.cl-logo--brown img    { width: calc(135.988 * var(--s)); }
+.cl-logo--bradex img   { width: calc(103.864 * var(--s)); }
+.cl-logo--unearth img  { width: calc(110.089 * var(--s)); }
+.cl-logo--imagon img   { width: calc(113.058 * var(--s)); }
+.cl-logo--harmonic img { width: calc(150.15 * var(--s)); }
+.cl-logo--six img      { width: calc(95.278 * var(--s)); }
+
+/* --- "Grab me" pill (follows the pointer over the marquee) --- */
+.cl-pill {
+  position: absolute;
+  left: 0;
+  top: 0;
+  display: flex;
+  align-items: center;
+  padding: calc(10 * var(--s)) calc(20 * var(--s));
+  background: rgba(255, 255, 255, 0.12);
+  border: calc(0.6 * var(--s)) solid #fff;
+  border-radius: calc(40 * var(--s));
+  backdrop-filter: blur(calc(6 * var(--s)));
+  -webkit-backdrop-filter: blur(calc(6 * var(--s)));
+  opacity: 0;
+  pointer-events: none;
+  z-index: 5;
+  will-change: transform;
+}
+.cl-pill__txt {
+  font-weight: 500;
+  font-size: calc(16 * var(--s));
+  line-height: calc(20 * var(--s));
+  letter-spacing: calc(-0.32 * var(--s));
+  color: #fff;
+  white-space: nowrap;
+}
+
+/* ============================================================
+   FAQ · Figma 205:529 (question) / 250:136 (answer revealed)
+   Folder-tabbed card: pick a numbered tab, read the question,
+   hit "Read answer" and the answer curtains up over the card
+   (wembi.ai-style); "Close" collapses it. Prev/next cycle tabs.
+   ============================================================ */
+.faq {
+  position: relative;
+  height: calc(900 * var(--s));
+  background: #000;
+  overflow: hidden;
+}
+.faq-title {
+  position: absolute;
+  left: 50%;
+  top: calc(120 * var(--s));
+  transform: translateX(-50%);
+  font-weight: 400;
+  font-size: calc(52 * var(--s));
+  line-height: calc(56 * var(--s));
+  letter-spacing: calc(-1.04 * var(--s));
+  color: #fff;
+  white-space: nowrap;
+}
+.faq-sub {
+  position: absolute;
+  left: 50%;
+  top: calc(204 * var(--s));
+  transform: translateX(-50%);
+  width: calc(313 * var(--s));
+  font-weight: 400;
+  font-size: calc(16 * var(--s));
+  line-height: calc(20 * var(--s));
+  letter-spacing: calc(-0.32 * var(--s));
+  color: #fff;
+  text-align: center;
+}
+
+/* --- widget (tabs + card), anchored on the 1440 canvas --- */
+.faq-widget { position: absolute; left: 0; top: 0; width: 100%; height: 100%; }
+
+/* --- folder tabs (absolute per Figma x; earlier tabs overlap the next
+       by ~20px, active always on top) --- */
+.faq-tab {
+  position: absolute;
+  top: calc(304 * var(--s));
+  box-sizing: border-box;
+  height: calc(46 * var(--s));
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;                     /* Figma overflow-clip */
+  background: rgba(255, 255, 255, 0.12);
+  border-top: calc(1 * var(--s)) solid rgba(255, 255, 255, 0.15);
+  border-radius: calc(12 * var(--s)) calc(12 * var(--s)) 0 0;
+  font-family: "ArtBrush", "DM Sans", sans-serif;
+  font-weight: 500;
+  font-size: calc(24 * var(--s));
+  line-height: calc(28 * var(--s));
+  letter-spacing: calc(-0.48 * var(--s));
+  color: #fff;
+  white-space: nowrap;
+  cursor: pointer;
+  transition: background 0.35s ease;
+  /* the fill is translucent, so two overlapping tabs would stack their
+     alpha (0.12 → ~0.226 combined) in the ~20px overlap and read as a
+     visible seam/"hump". Fix: each tab clips away exactly the sliver of
+     ITSELF that the tab in front already covers, so only ONE tab's fill
+     ever paints any given pixel. Default: every tab but the first clips
+     its own left 20px (covered by its left neighbour, which sits in
+     front per the z-index order below). When a tab becomes active it
+     jumps to the front instead — initFaq() flips which side gets clipped
+     (removes this tab's left clip, adds a right clip to its left
+     neighbour) via --cover-l/--cover-r. */
+  clip-path: inset(0 var(--cover-r, 0px) 0 var(--cover-l, 0px));
+}
+/* exact Figma x + width per tab → deterministic ~20px folder overlap;
+   earlier (lower) numbers sit on top, active always highest */
+.faq-tab:nth-child(1) { left: calc(340 * var(--s)); width: calc(112 * var(--s)); z-index: 5; }
+.faq-tab:nth-child(2) { left: calc(432 * var(--s)); width: calc(118 * var(--s)); z-index: 4; --cover-l: calc(20 * var(--s)); }
+.faq-tab:nth-child(3) { left: calc(530 * var(--s)); width: calc(117 * var(--s)); z-index: 3; --cover-l: calc(20 * var(--s)); }
+.faq-tab:nth-child(4) { left: calc(627 * var(--s)); width: calc(116 * var(--s)); z-index: 2; --cover-l: calc(20 * var(--s)); }
+.faq-tab:nth-child(5) { left: calc(723 * var(--s)); width: calc(118 * var(--s)); z-index: 1; --cover-l: calc(20 * var(--s)); }
+.faq-tab.is-active { background: #ff5b23; z-index: 6; --cover-l: 0px; }
+/* the tab immediately left of the active one: active jumps in front of
+   it, so its own right 20px is now the covered side instead */
+.faq-tab.is-covered-r { --cover-r: calc(20 * var(--s)); }
+
+/* --- card --- */
+.faq-card {
+  position: absolute;
+  left: calc(340 * var(--s));
+  top: calc(349 * var(--s));
+  width: calc(760 * var(--s));
+  height: calc(400 * var(--s));
+  border: calc(1 * var(--s)) solid #4c4c4c;
+  border-radius: 0 calc(12 * var(--s)) calc(12 * var(--s)) calc(12 * var(--s));
+}
+
+/* question view */
+.faq-q {
+  position: absolute;
+  left: calc(32 * var(--s));
+  top: calc(49 * var(--s));
+  width: calc(696 * var(--s));
+  display: flex;
+  flex-direction: column;
+  gap: calc(24 * var(--s));
+  align-items: flex-start;
+}
+.faq-cat {
+  font-weight: 400;
+  font-size: calc(16 * var(--s));
+  line-height: calc(20 * var(--s));
+  letter-spacing: calc(-0.32 * var(--s));
+  color: #fff;
+}
+.faq-line { width: 100%; height: calc(1 * var(--s)); background: #4c4c4c; }
+.faq-question {
+  font-weight: 400;
+  font-size: calc(24 * var(--s));
+  line-height: calc(28 * var(--s));
+  letter-spacing: calc(-0.48 * var(--s));
+  color: #fff;
+}
+
+/* answer view — frosted panel, curtains up over the card.
+   Outer node = clip container (reveal only). Inner glass = the frost;
+   keeping backdrop-filter off the clipped element makes it composite
+   reliably (clip-path + backdrop-filter on one node breaks in Chrome). */
+.faq-answer {
+  position: absolute;
+  left: calc(32 * var(--s));
+  top: calc(32 * var(--s));
+  width: calc(696 * var(--s));
+  height: calc(336 * var(--s));
+  border-radius: calc(8 * var(--s));
+  overflow: hidden;                 /* clips the sliding glass (reveal) */
+  pointer-events: none;
+  z-index: 3;
+}
+.faq-answer__glass {
+  position: absolute;
+  inset: 0;
+  background: rgba(255, 255, 255, 0.1);
+  border: calc(1 * var(--s)) solid rgba(0, 0, 0, 0.1);
+  border-radius: calc(8 * var(--s));
+  backdrop-filter: blur(calc(20 * var(--s)));
+  -webkit-backdrop-filter: blur(calc(20 * var(--s)));
+}
+.faq-answer.is-open { pointer-events: auto; }
+.faq-answer__txt {
+  position: absolute;
+  left: calc(31 * var(--s));
+  top: calc(31 * var(--s));
+  width: calc(370 * var(--s));
+  font-weight: 400;
+  font-size: calc(24 * var(--s));
+  line-height: calc(28 * var(--s));
+  letter-spacing: calc(-0.48 * var(--s));
+  color: #fff;
+}
+.faq-close {
+  position: absolute;
+  left: calc(20 * var(--s));
+  bottom: calc(16 * var(--s));
+  font-weight: 500;
+  font-size: calc(16 * var(--s));
+  line-height: calc(20 * var(--s));
+  letter-spacing: calc(-0.32 * var(--s));
+  color: #fff;
+  cursor: pointer;
+}
+
+/* "Read answer" bar (question state) */
+.faq-read {
+  position: absolute;
+  left: calc(32 * var(--s));
+  top: calc(316 * var(--s));
+  width: calc(568 * var(--s));
+  height: calc(52 * var(--s));
+  display: flex;
+  align-items: center;
+  padding-left: calc(20 * var(--s));
+  background: rgba(255, 255, 255, 0.1);
+  border: calc(1 * var(--s)) solid rgba(0, 0, 0, 0.1);
+  border-radius: calc(8 * var(--s));
+  font-weight: 500;
+  font-size: calc(16 * var(--s));
+  line-height: calc(20 * var(--s));
+  letter-spacing: calc(-0.32 * var(--s));
+  color: #fff;
+  cursor: pointer;
+  transition: background 0.3s ease;
+}
+.faq-read:hover { background: rgba(255, 255, 255, 0.18); }
+
+/* prev / next arrows */
+.faq-nav {
+  position: absolute;
+  left: calc(612 * var(--s));
+  top: calc(316 * var(--s));
+  display: flex;
+  gap: calc(12 * var(--s));
+  align-items: center;
+  z-index: 4;
+}
+.faq-arrow {
+  width: calc(52 * var(--s));
+  height: calc(52 * var(--s));
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(255, 255, 255, 0.1);
+  border: calc(1 * var(--s)) solid rgba(0, 0, 0, 0.1);
+  border-radius: calc(8 * var(--s));
+  color: #fff;
+  cursor: pointer;
+  transition: background 0.25s ease, border-color 0.25s ease, opacity 0.25s ease;
+}
+.faq-arrow svg { width: calc(28 * var(--s)); height: calc(28 * var(--s)); }
+.faq-arrow:hover { background: rgba(255, 255, 255, 0.2); }
+/* in the answer state the arrows lose their chrome (Figma 250:178) */
+.faq-card.is-answer .faq-arrow {
+  background: transparent;
+  border-color: transparent;
+}
+.faq-card.is-answer .faq-arrow:hover { background: rgba(255, 255, 255, 0.1); }
+
+/* ============================================================
+   Outro · Creative Network reveal → project fly-out → CTA
+   (Figma 205:546 / 216:48114 / 216:48174 / 216:48154 / 216:48188 / 226:48205)
+   ============================================================ */
+.outro {
+  position: relative;
+  z-index: 1;
+  background: #000;
+}
+.outro-stage {
+  position: relative;
+  /* tightened: burst → ~3 wheel-ticks → fold → CTA, short hold, release */
+  height: calc(4200 * var(--s));
+}
+/* real 100vh (like .d-sticky) — the collage overflows on purpose, so no
+   height-fit correction is needed */
+.outro-sticky {
+  position: sticky;
+  top: 0;
+  height: 100vh;
+  overflow: hidden;
+  background: #000;
+  perspective: calc(1600 * var(--s)); /* the camera for the 3D tilt / flips */
+  perspective-origin: 50% 50%;
+}
+
+/* the whole card collage — one 1440×900 box; the burst scales it in
+   (--z 0.45→0.85 — capped below full size per feedback) and the exit
+   swipes the whole group left off-screen (--ex, see showFold in main.js)
+   while it fades. The cursor parallax lives on the individual cards
+   (each with its own depth), not here */
+.outro-cards {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: calc(1440 * var(--s));
+  height: calc(900 * var(--s));
+  transform: translate(calc(-50% + var(--ex, 0px)), -50%) scale(var(--z, 0.45));
+  transform-origin: 50% 50%;
+  transform-style: preserve-3d;
+  z-index: 1;
+  will-change: transform, opacity;
+}
+/* each card unfolds from a page-flip tilt (--fx/--fy, angled away from the
+   collage centre) while settling from ~60% to full (--cs); all at once.
+   --px/--py is the per-card camera parallax — closer cards get larger
+   offsets, so the cursor pan reads with real depth */
+.outro-card {
+  position: absolute;
+  overflow: hidden;
+  border-radius: calc(12 * var(--s));
+  background: #111;
+  opacity: 0;
+  transform: translate3d(var(--px, 0px), var(--py, 0px), 0)
+             rotateX(var(--fx, 0deg)) rotateY(var(--fy, 0deg)) scale(var(--cs, 1));
+  transform-origin: 50% 50%;
+  backface-visibility: hidden;
+  will-change: transform, opacity;
+}
+.outro-card video {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+  border-radius: inherit; /* Chrome drops container rounding on <video> */
+}
+
+/* the word — lottie and text stacked in the identical transformed box */
+.outro-word {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%) scale(var(--wz, 1));
+  transform-origin: 50% 50%;
+  z-index: 2;
+  will-change: transform, opacity;
+}
+.outro-word__text {
+  position: relative; /* defines the box the lottie is centred over */
+  margin: 0;
+  font-family: "DM Sans", sans-serif;
+  font-weight: 500;
+  font-size: calc(80 * var(--s));
+  line-height: calc(80 * var(--s));
+  letter-spacing: calc(-1.6 * var(--s));
+  color: #fff;
+  text-align: center;
+  white-space: nowrap;
+  opacity: 0; /* raised once the lottie completes */
+}
+.outro-word__lottie {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  /* the "Creative Network" artwork is centred in the 741×174 lottie comp
+     and fills 84.35% of its width (625/741) — so a 673-wide box renders
+     the word at ~568, matching the 80px white text for a jump-free morph.
+     The height is explicit (673×174/741): the lottie svg is styled
+     width/height:100%, and a percentage height inside an auto-height box
+     blows the svg up to viewport size in Safari — the word rendered
+     cropped off both screen edges */
+  width: calc(673 * var(--s));
+  height: calc(158 * var(--s));
+  /* the artwork sits 2.9px (design units) left of the text's ink centre —
+     nudge the whole lottie right so the end-of-play cross-fade to #cn-text
+     doesn't read as a sideways jump (measured on live render) */
+  margin-left: calc(2.9 * var(--s));
+}
+.outro-word__lottie svg { display: block; }
+
+/* closing call to action */
+.outro-cta {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  width: calc(611 * var(--s));
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: calc(28 * var(--s));
+  z-index: 3;
+  pointer-events: none;
+}
+.outro-cta__title .w { opacity: 0; }
+.outro-cta__btn { opacity: 0; will-change: opacity, transform; }
+.outro-cta__title {
+  margin: 0;
+  font-family: "DM Sans", sans-serif;
+  font-weight: 400;
+  font-size: calc(52 * var(--s));
+  line-height: calc(56 * var(--s));
+  letter-spacing: calc(-1.04 * var(--s));
+  color: #fff;
+  text-align: center;
+}
+.outro-cta__btn {
+  display: inline-flex;
+  align-items: center;
+  gap: calc(12 * var(--s));
+  padding: calc(14 * var(--s)) calc(20 * var(--s));
+  border-radius: calc(40 * var(--s));
+  background: rgba(255, 255, 255, 0.1);
+  border: calc(0.6 * var(--s)) solid rgba(0, 0, 0, 0.6);
+  color: #fff;
+  font-family: "DM Sans", sans-serif;
+  font-weight: 500;
+  font-size: calc(16 * var(--s));
+  letter-spacing: calc(-0.32 * var(--s));
+  cursor: pointer;
+}
+
+/* ============================================================
+   Footer (Figma 226:48581 / 250:220)
+   ============================================================ */
+.ft {
+  position: relative;
+  height: calc(900 * var(--s));
+  background: #000;
+  overflow: hidden;
+  z-index: 1;
+  font-family: "DM Sans", sans-serif;
+}
+.ft p { margin: 0; }
+.ft-gray {
+  color: #8b8b8b;
+  font-size: calc(16 * var(--s));
+  line-height: calc(20 * var(--s));
+  letter-spacing: calc(-0.32 * var(--s));
+}
+.ft-white, .ft-white a {
+  color: #fff;
+  font-size: calc(16 * var(--s));
+  line-height: calc(20 * var(--s));
+  letter-spacing: calc(-0.32 * var(--s));
+  text-decoration: none;
+}
+.ft-gap { margin-top: calc(28 * var(--s)) !important; }
+
+/* --- top strip: words ⇄ image filmstrip on hover --- */
+.ft-strip {
+  position: absolute;
+  left: calc(80 * var(--s));
+  top: calc(60 * var(--s));
+  width: calc(1280 * var(--s));
+  height: calc(106 * var(--s));
+}
+.ft-strip__brands {
+  position: absolute;
+  left: 0;
+  top: calc(3 * var(--s));
+  font-size: calc(96 * var(--s));
+  line-height: calc(100 * var(--s));
+  letter-spacing: calc(-1.92 * var(--s));
+  color: #fff;
+  white-space: nowrap;
+  transition: opacity 0.35s ease;
+}
+.ft-strip__impact {
+  position: absolute;
+  left: calc(640 * var(--s));
+  top: 0;
+  width: calc(640 * var(--s));
+  height: calc(106 * var(--s));
+  background: #3a39ff;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  padding-right: calc(16 * var(--s));
+  transition: opacity 0.35s ease;
+}
+.ft-strip__impact p {
+  font-size: calc(64 * var(--s));
+  line-height: calc(68 * var(--s));
+  letter-spacing: calc(-1.28 * var(--s));
+  color: #fff;
+  white-space: nowrap;
+}
+/* image trail (nakedcityfilms): stamps pop in at the cursor, stay put
+   while it travels on, then fade — the words remain visible underneath */
+.ft-strip__tiles { position: absolute; inset: 0; pointer-events: none; }
+.ft-stamp {
+  position: absolute;
+  top: 0;
+  height: 100%;
+  width: calc(140 * var(--s));
+  overflow: hidden;
+  z-index: 2;
+  opacity: 0;
+  transform: scale(0.6);
+  transition: opacity 0.18s ease-out, transform 0.22s cubic-bezier(0.2, 1.4, 0.4, 1);
+}
+.ft-stamp img {
+  width: 100%; height: 100%;
+  object-fit: cover;
+  display: block;
+}
+.ft-stamp.in { opacity: 1; transform: scale(1); }
+.ft-stamp.out {
+  opacity: 0;
+  transform: scale(0.92);
+  transition: opacity 0.3s ease-in, transform 0.3s ease-in;
+}
+
+/* --- link columns --- */
+.ft-col {
+  position: absolute;
+  top: calc(250 * var(--s));
+  display: flex;
+  flex-direction: column;
+  gap: calc(8 * var(--s));
+}
+.ft-col--left { left: calc(80 * var(--s)); }
+.ft-col--right { right: calc(80 * var(--s)); top: calc(228 * var(--s)); text-align: right; align-items: flex-end; }
+.ft-socials {
+  display: flex;
+  gap: calc(28 * var(--s));
+  margin-top: calc(76 * var(--s));
+}
+.ft-socials img {
+  width: calc(16 * var(--s));
+  height: calc(16 * var(--s));
+  display: block;
+  opacity: 0.7;
+  filter: invert(1); /* the shared icons are black — footer sits on black */
+}
+/* the linkedin/instagram source SVGs are exported upside down — same fix
+   already applied to .menu-socials */
+.ft-socials a[aria-label="LinkedIn"] img,
+.ft-socials a[aria-label="Instagram"] img { transform: scaleY(-1); }
+.ft-socials a:hover img { opacity: 1; }
+
+/* --- glass-ball cluster --- */
+.ft-balls {
+  position: absolute;
+  left: calc(497 * var(--s));
+  top: calc(228 * var(--s));
+  width: calc(446 * var(--s));
+  height: calc(443 * var(--s));
+}
+.ft-ball {
+  position: absolute;
+  transform: translate3d(var(--bx, 0px), var(--by, 0px), 0) scale(var(--bs, 1));
+  will-change: transform;
+}
+.ft-ball img {
+  /* pre-rendered liquid-glass spheres (ball 1..16.png) — glass shading,
+     limb darkening and specular highlight are already baked into the PNG */
+  width: 100%; height: 100%;
+  display: block;
+}
+
+/* --- centre copyright / watermark / legal --- */
+.ft-copy {
+  position: absolute;
+  left: 50%;
+  top: calc(710 * var(--s));
+  transform: translateX(-50%);
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  gap: calc(4 * var(--s));
+}
+.ft-watermark {
+  position: absolute;
+  left: 50%;
+  top: calc(734 * var(--s));
+  transform: translateX(-50%);
+  width: calc(1280 * var(--s));
+  font-size: calc(96 * var(--s));
+  line-height: calc(106 * var(--s));
+  letter-spacing: calc(-1.92 * var(--s));
+  text-align: center;
+  white-space: nowrap;
+  color: #3c3c3c;
+  filter: blur(calc(9 * var(--s)));
+  pointer-events: none;
+  user-select: none;
+}
+.ft-legal {
+  position: absolute;
+  left: 50%;
+  top: calc(840 * var(--s));
+  transform: translateX(-50%);
+  display: flex;
+  gap: calc(32 * var(--s));
+}
+.ft-legal a {
+  color: #8b8b8b;
+  font-size: calc(16 * var(--s));
+  line-height: calc(20 * var(--s));
+  letter-spacing: calc(-0.32 * var(--s));
+  text-decoration: underline;
+  text-underline-offset: calc(3 * var(--s));
+}
+.ft-legal a:hover { color: #fff; }
+
+/* ============================================================
+   Reduced motion
+   ============================================================ */
+@media (prefers-reduced-motion: reduce) {
+  #preloader { display: none; }
+  body.is-loading { overflow: auto; }
+  body.is-loading .site { visibility: visible; height: auto; overflow: visible; }
+}
+
+/* static states when motion is unavailable */
+body.no-motion .about-line1 { transform: translate(-50%, -50%) !important; }
+body.no-motion .about-line1 .aw { background-position: 0 0 !important; }
+body.no-motion .about-line2 { display: none; }
+body.no-motion .about-bigword { display: none; }
+body.no-motion .about-build { opacity: 1; }
+body.no-motion .chip:first-child { opacity: 1; }
+
+/* no scrub → skip the intro zoom, show the directory outright */
+body.no-motion .d-stage { display: none; }
+
+/* no scrub → skip straight to the settled CREATE/project-1 state, skip
+   the stat carousel, the grow-in-place zoom and the letter scatter */
+body.no-motion .works-stage { height: auto; }
+body.no-motion .works-sticky { position: static; height: calc(900 * var(--s)); overflow: visible; }
+
+/* no scrub → collapse the outro to a static "Creative Network" + CTA */
+body.no-motion .outro-stage { height: auto; }
+body.no-motion .outro-sticky { position: static; height: calc(900 * var(--s)); }
+body.no-motion .outro-cards { display: none; }
+body.no-motion #cn-text { opacity: 1; }
+body.no-motion #cn-lottie { display: none; }
+body.no-motion .outro-word { transform: translate(-50%, -50%); }
+body.no-motion .outro-cta { display: none; }
+body.no-motion .works-bg--light { display: none; }
+body.no-motion .works-inner,
+body.no-motion .proj-overlay { position: absolute; inset: 0; width: auto; height: auto; left: 0; top: 0; transform: none !important; }
+body.no-motion .work-card--stat { display: none; }
+body.no-motion .proj-media { opacity: 1 !important; inset: 0 !important; width: auto !important; height: auto !important; transform: none !important; border-radius: 0 !important; }
+body.no-motion #proj-media-img,
+body.no-motion #proj-media-video-2,
+body.no-motion #proj-media-video-3 { opacity: 0 !important; transform: none !important; }
+body.no-motion #proj-media-video-1,
+body.no-motion .proj-media__tint { opacity: 1 !important; transform: none !important; }
+body.no-motion .proj-post__head,
+body.no-motion .proj-post__cap { display: none; }
+body.no-motion .creat-word,
+body.no-motion .btn--view-project { opacity: 1 !important; }
+body.no-motion .proj-info:not(.is-active) { display: none; }
+body.no-motion .proj-info.is-active { opacity: 1 !important; transform: none !important; }
+
+/* no scrub / no hover → three static 2×2 packs stacked, all descriptions shown */
+body.no-motion .industries-stage { height: auto; }
+body.no-motion .industries-sticky { position: static; height: auto; overflow: visible; }
+body.no-motion .industries-inner {
+  position: static; left: auto; top: auto; width: 100%; height: auto;
+  transform: none; padding-bottom: calc(80 * var(--s));
+}
+body.no-motion .ind-head { position: relative; left: 50%; top: auto; margin-top: calc(120 * var(--s)); }
+body.no-motion .ind-pill { display: none; }
+body.no-motion .ind-pack {
+  position: relative; inset: auto; height: calc(760 * var(--s));
+  opacity: 1 !important; transform: none !important;
+}
+body.no-motion .ind-grid { top: 50%; }
+body.no-motion .ind-desc { opacity: 1 !important; transform: none !important; }
