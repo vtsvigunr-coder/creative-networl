@@ -404,7 +404,13 @@ body.is-loading .site {
 /* --- Curated talent (Figma 194:345 / 195:13) ------------------ */
 .curated {
   position: absolute;
-  top: calc(640 * var(--s));
+  /* anchored from the bottom (900 canvas − 640 top − 136 two-line height =
+     124), not from the top: .stage-sticky is real 100vh while --s only
+     tracks width, so on a wider/shorter-than-1440:900 viewport a top
+     offset drifts low enough to clip the second line against the
+     sticky's overflow:hidden. Anchoring to the bottom keeps it pinned a
+     proportional distance above the real edge of the viewport instead. */
+  bottom: calc(124 * var(--s));
   left: 50%;
   transform: translateX(-50%) translateY(calc(420 * var(--s)));
   font-size: calc(64 * var(--s));
