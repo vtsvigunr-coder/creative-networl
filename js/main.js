@@ -81,8 +81,26 @@
     var script = document.getElementById("hero-script");
     var showreel = document.getElementById("showreel");
     var curated = document.getElementById("curated");
+    var stageEl = document.getElementById("scroll-stage");
 
-    gsap.set(curated, { xPercent: -50, x: 0, y: function () { return 420 * S(); }, opacity: 0 });
+    // Figma (194:345) puts the grown showreel's bottom edge at 560 and
+    // "Curated talent…" at top:640/bottom:776 — an exact 80px gap. That's
+    // authored against the 1440×900 canvas; .stage-sticky is real 100vh,
+    // so on a wider/shorter-than-1440:900 viewport 776*S() alone can
+    // exceed the actual viewport height. HFIT shrinks just this showreel
+    // + curated pair (never the header/hero title above) so the 80px
+    // gap — and everything else about the pair — stays exactly
+    // proportional to Figma at any aspect ratio, instead of clipping or
+    // drifting into an arbitrary hand-picked gap.
+    var HFIT = 1;
+    function computeHfit() {
+      HFIT = Math.min(1, (window.innerHeight * 0.98) / (776 * S()));
+      if (stageEl) stageEl.style.setProperty("--hfit", HFIT);
+    }
+    computeHfit();
+    window.addEventListener("resize", computeHfit);
+
+    gsap.set(curated, { xPercent: -50, x: 0, y: function () { return 420 * S() * HFIT; }, opacity: 0 });
 
     var stl = gsap.timeline({
       defaults: { ease: "none" },
@@ -101,18 +119,18 @@
     stl.to(heroCenter, { y: function () { return -320 * S(); }, opacity: 0, duration: 0.45 }, 0);
     stl.to(script, { y: function () { return -440 * S(); }, duration: 1 }, 0);
     stl.to(showreel, {
-      top: function () { return 509 * S(); },
-      width: function () { return 920 * S(); },
-      height: function () { return 530 * S(); },
+      top: function () { return 509 * S() * HFIT; },
+      width: function () { return 920 * S() * HFIT; },
+      height: function () { return 530 * S() * HFIT; },
       duration: 1
     }, 0);
 
     /* phase 2 · 194:308 → 194:345 */
     stl.to(script, { y: function () { return -1150 * S(); }, duration: 1 }, 1);
     stl.to(showreel, {
-      top: function () { return -180 * S(); },
-      width: function () { return 1280 * S(); },
-      height: function () { return 740 * S(); },
+      top: function () { return -180 * S() * HFIT; },
+      width: function () { return 1280 * S() * HFIT; },
+      height: function () { return 740 * S() * HFIT; },
       duration: 1
     }, 1);
     stl.to(curated, { y: 0, opacity: 1, duration: 0.7 }, 1.2);

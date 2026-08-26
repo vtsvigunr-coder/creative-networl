@@ -404,23 +404,18 @@ body.is-loading .site {
 /* --- Curated talent (Figma 194:345 / 195:13) ------------------ */
 .curated {
   position: absolute;
-  /* two competing constraints, resolved with min():
-     1) clear of the showreel card, whose scrubbed rest position ends at
-        top:-180*s + height:740*s = 560*s — sit a fixed 32*s gap below that.
-     2) clear of .stage-sticky's real-100vh bottom edge (overflow:hidden) —
-        a pure top-offset (constraint 1 alone) ignores the real viewport
-        height and clips the second line on a wider/shorter-than-1440:900
-        window, so cap it at 100vh minus the two-line block height (136*s)
-        plus a 24*s margin.
-     On any normal aspect ratio (1) is the smaller value and wins, sitting
-     right under the video; only on an extremely short viewport does (2)
-     kick in, trading a few px of overlap for guaranteed no clipping. */
-  top: min(calc(592 * var(--s)), calc(100vh - 160 * var(--s)));
+  /* Figma (194:345) exactly: showreel bottom 560 + 80 gap = top:640,
+     bottom:776 — an 80px gap, authored against the 1440×900 canvas.
+     --hfit (computed in initScrollStage, js/main.js) shrinks this value
+     together with the showreel's own grown size whenever 776*s would
+     exceed the real (100vh) viewport, so the Figma-exact 80px gap stays
+     exactly proportional at any aspect ratio instead of clipping. */
+  top: calc(640 * var(--s) * var(--hfit, 1));
   left: 50%;
   transform: translateX(-50%) translateY(calc(420 * var(--s)));
-  font-size: calc(64 * var(--s));
-  line-height: calc(68 * var(--s));
-  letter-spacing: calc(-1.28 * var(--s));
+  font-size: calc(64 * var(--s) * var(--hfit, 1));
+  line-height: calc(68 * var(--s) * var(--hfit, 1));
+  letter-spacing: calc(-1.28 * var(--s) * var(--hfit, 1));
   font-weight: 400;
   text-align: center;
   white-space: nowrap;
